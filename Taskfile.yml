@@ -1,0 +1,23 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  ISSUE_REVIEW_FILTER: >
+    "Issue reviewer[People]" = currentUser() AND status = "ISSUE REVIEW"
+    ORDER BY updated DESC
+  CODE_REVIEW_FILTER: >
+    "Code reviewer[People]" = currentUser() AND status = "Code Review"
+    ORDER BY updated DESC'
+
+tasks:
+  review:
+    cmds:
+      - >
+        for task in $(jira list --query {{.ISSUE_REVIEW_FILTER}}); do
+        python3 esign.py --issue $task --meaning="Issue Review" {{.CLI_ARGS}};
+        done
+      - >
+        for task in $(jira list --query {{.CODE_REVIEW_FILTER}}); do
+        python3 esign.py --issue $task --meaning="Code Review" {{.CLI_ARGS}};
+        done
