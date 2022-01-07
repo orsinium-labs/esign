@@ -5,6 +5,7 @@ from urllib.parse import urlparse, parse_qs
 
 URL_DIALOG = "https://{company}.atlassian.net/plugins/servlet/ac/esign/issue-sign-dialog"
 URL_SIGN = "https://japi.esign-app.com/jira/api/sign-issue"
+URL_FINALIZE = "https://japi.esign-app.com/jira/api/finalize-issue"
 
 
 def get_jwt(args) -> str:
@@ -30,8 +31,7 @@ def get_jwt(args) -> str:
     return parse_qs(url.query)["jwt"][0]
 
 
-def sign(args):
-    jwt = get_jwt(args)
+def sign(jwt, args):
     body = dict(
         issueKey=args.issue,
         meaning=args.meaning,
@@ -44,6 +44,17 @@ def sign(args):
     assert r.status_code == 200
 
 
+def finalize(jwt, args):
+    body = dict(
+        issueKey=args.issue,
+        archiveFlag=True,
+    )
+    params = dict(issueKey=args.issue, jwt=jwt)
+    r = requests.post(URL_FINALIZE, params=params, json=body)
+    r.raise_for_status()
+    assert r.status_code == 200
+
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('--issue', required=True)
@@ -52,10 +63,15 @@ def main():
     parser.add_argument('--company', default="nico-lab")
     parser.add_argument('--meaning', default="Code Review")
     parser.add_argument('--title', default="Software Engineer")
+    parser.add_argument('--finalize', action="store_true")
     args = parser.parse_args()
     print(f"signing {args.meaning} for {args.issue}")
-    sign(args)
+    jwt = get_jwt(args)
+    sign(jwt, args)
     print("  signed!")
+    if args.finalize:
+        finalize(jwt, args)
+        print("  finalized!")
 
 
 if __name__ == '__main__':
