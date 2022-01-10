@@ -8,16 +8,16 @@ vars:
     ORDER BY updated DESC
   CODE_REVIEW_FILTER: >
     "Code reviewer[People]" = currentUser() AND status = "Code Review"
-    ORDER BY updated DESC'
+    ORDER BY updated DESC
 
 tasks:
   review:
     cmds:
       - >
-        for task in $(jira list --query '{{.ISSUE_REVIEW_FILTER}}'); do
+        for task in $(jira list --query '{{.ISSUE_REVIEW_FILTER}}' | cut -f1 -d:); do
         python3 esign.py --issue $task --meaning="Issue Review" {{.CLI_ARGS}};
         done
       - >
-        for task in $(jira list --query '{{.CODE_REVIEW_FILTER}}'); do
+        for task in $(jira list --query '{{.CODE_REVIEW_FILTER}}' | cut -f1 -d:); do
         python3 esign.py --issue $task --meaning="Code Review" {{.CLI_ARGS}};
         done

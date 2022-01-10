@@ -1,21 +1,24 @@
 from argparse import ArgumentParser
 import json
+import re
 import requests
+import sys
 from urllib.parse import urlparse, parse_qs
 
 URL_DIALOG = "https://{company}.atlassian.net/plugins/servlet/ac/esign/issue-sign-dialog"
 URL_SIGN = "https://japi.esign-app.com/jira/api/sign-issue"
 URL_FINALIZE = "https://japi.esign-app.com/jira/api/finalize-issue"
+REX_ISSUE = re.compile(r'[A-Z]+\-[0-9]+')
 
 
 def get_jwt(args) -> str:
     headers = {'Cookie': f'cloud.session.token={args.token}'}
     ctx = json.dumps({
         "project.key": args.issue.split('-')[0],
-        "project.id": "10032",
-        "issue.id": "14880",
+        "project.id": "0",
+        "issue.id": "0",
         "issue.key": args.issue,
-        "issuetype.id": "10110",
+        "issuetype.id": "0",
     })
     form = {
         'plugin-key': 'esign',
@@ -55,7 +58,7 @@ def finalize(jwt, args):
     assert r.status_code == 200
 
 
-def main():
+def main() -> int:
     parser = ArgumentParser()
     parser.add_argument('--issue', required=True)
     parser.add_argument('--pin', required=True)
@@ -65,6 +68,9 @@ def main():
     parser.add_argument('--title', default="Software Engineer")
     parser.add_argument('--finalize', action="store_true")
     args = parser.parse_args()
+    if not REX_ISSUE.fullmatch(args.issue):
+        print(f'invalid issue: {args.issue}')
+        return 1
     print(f"signing {args.meaning} for {args.issue}")
     jwt = get_jwt(args)
     sign(jwt, args)
@@ -72,7 +78,8 @@ def main():
     if args.finalize:
         finalize(jwt, args)
         print("  finalized!")
+    return 0
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
