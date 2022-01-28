@@ -12,6 +12,7 @@ vars:
 
 tasks:
   review:
+    silent: true
     cmds:
       - >
         for task in $(jira list --query '{{.ISSUE_REVIEW_FILTER}}' | cut -f1 -d:); do
