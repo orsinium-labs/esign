@@ -16,9 +16,9 @@ tasks:
     cmds:
       - >
         for task in $(jira list --query '{{.ISSUE_REVIEW_FILTER}}' | cut -f1 -d:); do
-        python3 esign.py --issue $task --meaning="Issue Review" --finalize {{.CLI_ARGS}};
+        python3 esign.py --issue $task --meaning="Issue Review" --finalize --company=nico-lab {{.CLI_ARGS}};
         done
       - >
         for task in $(jira list --query '{{.CODE_REVIEW_FILTER}}' | cut -f1 -d:); do
-        python3 esign.py --issue $task --meaning="Code Review" {{.CLI_ARGS}};
+        python3 esign.py --issue $task --meaning="Code Review" --company=nico-lab {{.CLI_ARGS}};
         done

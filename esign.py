@@ -34,7 +34,7 @@ def get_jwt(args) -> str:
     return parse_qs(url.query)["jwt"][0]
 
 
-def sign(jwt, args):
+def sign(jwt: str, args) -> None:
     body = dict(
         issueKey=args.issue,
         meaning=args.meaning,
@@ -47,7 +47,7 @@ def sign(jwt, args):
     assert r.status_code == 200
 
 
-def finalize(jwt, args):
+def finalize(jwt: str, args) -> None:
     body = dict(
         issueKey=args.issue,
         archiveFlag=True,
@@ -60,13 +60,13 @@ def finalize(jwt, args):
 
 def main() -> int:
     parser = ArgumentParser()
-    parser.add_argument('--issue', required=True)
-    parser.add_argument('--pin', required=True)
+    parser.add_argument('--issue', required=True, help="key of the issue to sign")
+    parser.add_argument('--pin', required=True, help="pin as you enter it in esign form")
     parser.add_argument('--token', required=True, help="value of cloud.session.token cookie")
-    parser.add_argument('--company', default="nico-lab")
-    parser.add_argument('--meaning', default="Code Review")
-    parser.add_argument('--title', default="Software Engineer")
-    parser.add_argument('--finalize', action="store_true")
+    parser.add_argument('--company', required=True, help="subdomain of atlassian.net to use")
+    parser.add_argument('--meaning', default="Code Review", help="value for 'meaning' field")
+    parser.add_argument('--title', default="Software Engineer", help="value for 'title' field")
+    parser.add_argument('--finalize', action="store_true", help="set to finalize the signature")
     args = parser.parse_args()
     if not REX_ISSUE.fullmatch(args.issue):
         print(f'invalid issue: {args.issue}')
